@@ -87,6 +87,7 @@ QUERIES = {
 def al_anime(bot, trigger):
     """Queries AniList for an anime matching the search input."""
     if not trigger.group(2):
+        bot.reply("You have to tell me what to search.")
         return
 
     variables = {
@@ -105,6 +106,7 @@ def al_anime(bot, trigger):
 def al_character(bot, trigger):
     """Queries AniList for a character matching the search input."""
     if not trigger.group(2):
+        bot.reply("You have to tell me what to search.")
         return
 
     variables = {

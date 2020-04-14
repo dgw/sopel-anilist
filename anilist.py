@@ -21,12 +21,12 @@ QUERIES = {
         query ($name: String) {
             Character(search: $name) {
                 id
-                    name {
-                        first
-                        last
-                        full
-                        native
-                    }
+                name {
+                    first
+                    last
+                    full
+                    native
+                }
                 description(asHtml: true)
                 media {
                     nodes {

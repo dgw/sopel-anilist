@@ -9,6 +9,12 @@ https://sopel.chat
 """
 from __future__ import unicode_literals, absolute_import, print_function, division
 
+try:
+    from json import JSONDecodeError
+except ImportError:
+    # Python < 3.5
+    JSONDecodeError = ValueError
+
 import requests
 
 from sopel import module
@@ -83,6 +89,39 @@ QUERIES = {
 }
 
 
+class AniListAPIError(Exception):
+    pass
+
+
+def al_query(query, variables={}):
+    """Send a GraphQL query to AniList.
+
+    :param str query: the query to send
+    :param variables: any variables needed for the query to run
+    :type variables: :class:`dict`
+    :return: Decoded JSON result
+    :rtype: :class:`dict`
+    :raise AniListAPIError: when the API request fails for any reason
+    """
+    try:
+        r = requests.post(
+            ANILIST_ENDPOINT,
+            json={
+                'query': query,
+                'variables': variables,
+            },
+        )
+    except Exception as e:
+        raise AniListAPIError("Communication with AniList failed.")
+
+    try:
+        data = r.json()
+    except JSONDecodeError:
+        raise AniListAPIError("JSON decoding failed.")
+
+    return data
+
+
 @module.commands('anilist', 'al')
 def al_anime(bot, trigger):
     """Queries AniList for an anime matching the search input."""
@@ -93,13 +132,37 @@ def al_anime(bot, trigger):
     variables = {
         'name': trigger.group(2),
     }
-    result = requests.post(ANILIST_ENDPOINT, json={'query': QUERIES['anime'], 'variables': variables})
-    data = result.json()['data']
+    try:
+        data = al_query(QUERIES['anime'], variables)
+    except AniListAPIError as e:
+        bot.reply("Error: {}".format(str(e)))
+        return
 
-    if data:
-        bot.say(data['Media']['title']['english'] + ' (' + data['Media']['seasonYear'] + ') | ' + data['Media']['format'] + ' | Studio: ' + data['Media']['studios']['nodes']['name'] + ' | Score: ' + data['Media']['averageScore'] + ' | ' + data['Media']['status'] + ' Eps: ' + data['Media']['episodes'] + ' | ' + data['Media']['siteUrl'] + ' | Genres: ' + data['Media']['genres'] + ' | VA: ' + data['Media']['characters']['edges']['voiceActors'] + ' | Synopsis: ' + data['Media']['description'])
+    if data.get('errors', []):
+        bot.reply("No results found for '%s'." % trigger.group(2))
     else:
-        bot.reply("No results found for '%s'." % query)
+        media = data['data']['Media']
+        studios = ', '.join([studio['name'] for studio in media['studios']['nodes']])
+        genres = ', '.join(media['genres'])
+        voice_actors = ', '.join(
+            [
+                va['name']['full']
+                for char in media['characters']['edges']
+                for va in char['voiceActors']
+            ]
+        )
+        template = (
+            "{media[title][english]} ({media[seasonYear]}) | {media[format]} | "
+            "Studio: {studios} | Score: {media[averageScore]} | {media[status]}"
+            " Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
+            "VA: {voice_actors} | Synopsis: {media[description]}"
+        )
+        bot.say(template.format(
+            media=media,
+            studios=studios,
+            genres=genres,
+            voice_actors=voice_actors,
+        ))
 
 
 @module.commands('anilistchar', 'alc')
@@ -112,10 +175,19 @@ def al_character(bot, trigger):
     variables = {
         'name': trigger.group(2),
     }
-    result = requests.post(ANILIST_ENDPOINT, json={'query': QUERIES['character'], 'variables': variables})
-    data = result.json()['data']
+    try:
+        data = al_query(QUERIES['character'], variables)
+    except AniListAPIError as e:
+        bot.reply("Error: {}".format(str(e)))
+        return
 
-    if data:
-        bot.say(data['Character']['name']['full'] + ' from ' + data['Character']['media']['nodes'][0]['title']['userPreferred'])
+    if data.get('errors', []):
+        bot.reply("No results found for '%s'." % trigger.group(2))
     else:
-        bot.reply("No results found for '%s'." % query)
+        char = data['data']['Character']
+        template = (
+            "{char[name][full]} from {char[media][nodes][0][title][english]}"
+        )
+        bot.say(template.format(
+            char=char,
+        ))

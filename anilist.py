@@ -60,6 +60,42 @@ QUERIES = {
             }
         }
     """,
+    "manga": """
+        query ($name: String) {
+            Media (search: $name, type: MANGA) {
+                title {
+                    romaji
+                    english
+                }
+                format
+                startDate {
+                    year
+                }
+                averageScore
+                status
+                volumes
+                siteUrl
+                genres
+                description (asHtml: true)
+                characters (role: MAIN) {
+                    edges {
+                        node {
+                            name {
+                                full
+                            }
+                        }
+                    }
+                }
+                staff {
+                    nodes {
+                        name {
+                            full
+                        }
+                    }
+                }
+            }
+        }
+    """,
     "character": """
         query ($name: String) {
             Character(search: $name) {
@@ -162,6 +198,48 @@ def al_anime(bot, trigger):
             studios=studios,
             genres=genres,
             voice_actors=voice_actors,
+        ))
+
+
+@module.commands('anilistmanga', 'alm')
+def al_manga(bot, trigger):
+    """Queries AniList for an manga matching the search input."""
+    if not trigger.group(2):
+        bot.reply("You have to tell me what to search.")
+        return
+
+    variables = {
+        'name': trigger.group(2),
+    }
+    try:
+        data = al_query(QUERIES['manga'], variables)
+    except AniListAPIError as e:
+        bot.reply("Error: {}".format(str(e)))
+        return
+
+    if data.get('errors', []):
+        bot.reply("No results found for '%s'." % trigger.group(2))
+    else:
+        media = data['data']['Media']
+        staff = ', '.join([staff['full'] for staff in media['staff']['nodes']['name']])
+        genres = ', '.join(media['genres'])
+        characters = ', '.join(
+            [
+                mc['name']['full']
+                for char in media['characters']['edges']
+            ]
+        )
+        template = (
+            "{media[title][english]} ({media[startDate][year]}) | {media[format]} | "
+            "Staff: {staff} | Score: {media[averageScore]} | {media[status]}"
+            " Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
+            "MC: {characters} | Synopsis: {media[description]}"
+        )
+        bot.say(template.format(
+            media=media,
+            staff=staff,
+            genres=genres,
+            characters=characters,
         ))
 
 

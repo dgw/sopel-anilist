@@ -29,6 +29,7 @@ QUERIES = {
                 title {
                     romaji
                     english
+                    native
                 }
                 format
                 seasonYear
@@ -66,6 +67,7 @@ QUERIES = {
                 title {
                     romaji
                     english
+                    native
                 }
                 format
                 startDate {
@@ -99,8 +101,6 @@ QUERIES = {
             Character(search: $name) {
                 id
                 name {
-                    first
-                    last
                     full
                     native
                 }
@@ -112,7 +112,6 @@ QUERIES = {
                             romaji
                             english
                             native
-                            userPreferred
                         }
                         type
                     }
@@ -176,6 +175,7 @@ def al_anime(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         media = data['data']['Media']
+        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
         studios = ', '.join([studio['name'] for studio in media['studios']['nodes']])
         genres = ', '.join(media['genres'])
         voice_actors = ', '.join(
@@ -186,13 +186,14 @@ def al_anime(bot, trigger):
             ]
         )
         template = (
-            "{media[title][english]} ({media[seasonYear]}) | {media[format]} | "
+            "{title} ({media[seasonYear]}) | {media[format]} | "
             "Studio: {studios} | Score: {media[averageScore]} | {media[status]}"
             " Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
             "VA: {voice_actors} | Synopsis: {media[description]}"
         )
         bot.say(template.format(
             media=media,
+            title=title,
             studios=studios,
             genres=genres,
             voice_actors=voice_actors,
@@ -219,6 +220,7 @@ def al_manga(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         media = data['data']['Media']
+        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
         staff = ', '.join([staff['name']['full'] for staff in media['staff']['nodes']])
         genres = ', '.join(media['genres'])
         characters = ', '.join(
@@ -228,13 +230,14 @@ def al_manga(bot, trigger):
             ]
         )
         template = (
-            "{media[title][english]} ({media[startDate][year]}) | {media[format]} | "
+            "{title} ({media[startDate][year]}) | {media[format]} | "
             "Staff: {staff} | Score: {media[averageScore]} | {media[status]}"
             " Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
             "MC: {characters} | Synopsis: {media[description]}"
         )
         bot.say(template.format(
             media=media,
+            title=title,
             staff=staff,
             genres=genres,
             characters=characters,
@@ -261,9 +264,14 @@ def al_character(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         char = data['data']['Character']
+        media = char['media']['nodes'][0]
+        name = char['name']['full'] or char['name']['native']
+        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
         template = (
-            "{char[name][full]} from {char[media][nodes][0][title][english]}"
+            "{name} from {title}"
         )
         bot.say(template.format(
             char=char,
+            name=name,
+            title=title,
         ))

@@ -78,11 +78,9 @@ QUERIES = {
                 genres
                 description (asHtml: true)
                 characters (role: MAIN) {
-                    edges {
-                        node {
-                            name {
-                                full
-                            }
+                    nodes {
+                        name {
+                            full
                         }
                     }
                 }
@@ -221,12 +219,12 @@ def al_manga(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         media = data['data']['Media']
-        staff = ', '.join([staff['full'] for staff in media['staff']['nodes']['name']])
+        staff = ', '.join([staff['name']['full'] for staff in media['staff']['nodes']])
         genres = ', '.join(media['genres'])
         characters = ', '.join(
             [
-                mc['name']['full']
-                for char in media['characters']['edges']
+                char['name']['full']
+                for char in media['characters']['nodes']
             ]
         )
         template = (

@@ -187,8 +187,8 @@ def al_anime(bot, trigger):
         )
         template = (
             "{title} ({media[seasonYear]}) | {media[format]} | "
-            "Studio: {studios} | Score: {media[averageScore]} | {media[status]}"
-            " Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
+            "Studio: {studios} | Score: {media[averageScore]} | {media[status]} | "
+            "Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
             "VA: {voice_actors} | Synopsis: {media[description]}"
         )
         bot.say(template.format(
@@ -231,8 +231,8 @@ def al_manga(bot, trigger):
         )
         template = (
             "{title} ({media[startDate][year]}) | {media[format]} | "
-            "Staff: {staff} | Score: {media[averageScore]} | {media[status]}"
-            " Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
+            "Staff: {staff} | Score: {media[averageScore]} | {media[status]} | "
+            "Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
             "MC: {characters} | Synopsis: {media[description]}"
         )
         bot.say(template.format(

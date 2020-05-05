@@ -15,6 +15,7 @@ except ImportError:
     # Python < 3.5
     JSONDecodeError = ValueError
 
+import bleach
 import requests
 
 from sopel import module
@@ -189,7 +190,7 @@ def al_anime(bot, trigger):
             "{title} ({media[seasonYear]}) | {media[format]} | "
             "Studio: {studios} | Score: {media[averageScore]} | {media[status]} | "
             "Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
-            "VA: {voice_actors} | Synopsis: {media[description]}"
+            "VA: {voice_actors} | Synopsis: {description}"
         )
         bot.say(template.format(
             media=media,
@@ -197,6 +198,7 @@ def al_anime(bot, trigger):
             studios=studios,
             genres=genres,
             voice_actors=voice_actors,
+            description=clean_html(media['description']),
         ))
 
 
@@ -233,7 +235,7 @@ def al_manga(bot, trigger):
             "{title} ({media[startDate][year]}) | {media[format]} | "
             "Staff: {staff} | Score: {media[averageScore]} | {media[status]} | "
             "Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
-            "MC: {characters} | Synopsis: {media[description]}"
+            "MC: {characters} | Synopsis: {description}"
         )
         bot.say(template.format(
             media=media,
@@ -241,6 +243,7 @@ def al_manga(bot, trigger):
             staff=staff,
             genres=genres,
             characters=characters,
+            description=clean_html(media['description']),
         ))
 
 
@@ -275,3 +278,8 @@ def al_character(bot, trigger):
             name=name,
             title=title,
         ))
+
+
+def clean_html(input):
+    output = bleach.clean(input, tags=[], strip=True)
+    return web.decode(output)

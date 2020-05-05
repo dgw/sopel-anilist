@@ -271,12 +271,13 @@ def al_character(bot, trigger):
         name = char['name']['full'] or char['name']['native']
         title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
         template = (
-            "{name} from {title}"
+            "{name} from {title} | {description}"
         )
         bot.say(template.format(
             char=char,
             name=name,
             title=title,
+            description=clean_html(char['description']),
         ))
 
 

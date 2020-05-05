@@ -186,20 +186,21 @@ def al_anime(bot, trigger):
                 for va in char['voiceActors']
             ]
         )
-        template = (
+
+        output = (
             "{title} ({media[seasonYear]}) | {media[format]} | "
             "Studio: {studios} | Score: {media[averageScore]} | {media[status]} | "
             "Eps: {media[episodes]} | {media[siteUrl]} | Genres: {genres} | "
             "VA: {voice_actors} | Synopsis: {description}"
-        )
-        bot.say(template.format(
+        ).format(
             media=media,
             title=title,
             studios=studios,
             genres=genres,
             voice_actors=voice_actors,
             description=clean_html(media['description']),
-        ))
+        )
+        bot.say(truncate_result(output))
 
 
 @module.commands('anilistmanga', 'alm')
@@ -231,20 +232,20 @@ def al_manga(bot, trigger):
                 for char in media['characters']['nodes']
             ]
         )
-        template = (
+        output = (
             "{title} ({media[startDate][year]}) | {media[format]} | "
             "Staff: {staff} | Score: {media[averageScore]} | {media[status]} | "
             "Vols: {media[volumes]} | {media[siteUrl]} | Genres: {genres} | "
             "MC: {characters} | Synopsis: {description}"
-        )
-        bot.say(template.format(
+        ).format(
             media=media,
             title=title,
             staff=staff,
             genres=genres,
             characters=characters,
             description=clean_html(media['description']),
-        ))
+        )
+        bot.say(truncate_result(output))
 
 
 @module.commands('anilistchar', 'alc')
@@ -270,17 +271,36 @@ def al_character(bot, trigger):
         media = char['media']['nodes'][0]
         name = char['name']['full'] or char['name']['native']
         title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
-        template = (
+
+        output = (
             "{name} from {title} | {description}"
-        )
-        bot.say(template.format(
+        ).format(
             char=char,
             name=name,
             title=title,
             description=clean_html(char['description']),
-        ))
+        )
+        bot.say(truncate_result(output))
 
 
 def clean_html(input):
     output = bleach.clean(input, tags=[], strip=True)
     return web.decode(output)
+
+
+def truncate_result(text):
+    if len(text) > 400:
+        last_space = text.rfind(' ', 0, 400)
+        if last_space == -1:
+            # force hard break if the text doesn't contain any spaces
+            r = text[:400]
+        else:
+            r = text[:last_space]
+
+        # add ellipsis only if the input was actually shortened
+        if len(r) < len(text):
+            r += '…'
+
+        return r
+
+    return text

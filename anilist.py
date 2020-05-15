@@ -18,7 +18,7 @@ except ImportError:
 import bleach
 import requests
 
-from sopel import module
+from sopel import formatting, module
 from sopel.tools import web
 
 
@@ -122,6 +122,8 @@ QUERIES = {
     """,
 }
 
+NO_DESCRIPTION = formatting.italic('[no description available]')
+
 
 class AniListAPIError(Exception):
     pass
@@ -198,7 +200,7 @@ def al_anime(bot, trigger):
             studios=studios,
             genres=genres,
             voice_actors=voice_actors,
-            description=clean_html(media['description']),
+            description=(clean_html(media['description']) or NO_DESCRIPTION),
         )
         bot.say(truncate_result(output))
 
@@ -243,7 +245,7 @@ def al_manga(bot, trigger):
             staff=staff,
             genres=genres,
             characters=characters,
-            description=clean_html(media['description']),
+            description=(clean_html(media['description']) or NO_DESCRIPTION),
         )
         bot.say(truncate_result(output))
 
@@ -278,7 +280,7 @@ def al_character(bot, trigger):
             char=char,
             name=name,
             title=title,
-            description=clean_html(char['description']),
+            description=(clean_html(char['description']) or NO_DESCRIPTION),
         )
         bot.say(truncate_result(output))
 

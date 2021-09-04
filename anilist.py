@@ -276,7 +276,6 @@ def al_character(bot, trigger):
         output = (
             "{name} from {title} | {description}"
         ).format(
-            char=char,
             name=name,
             title=title,
             description=(clean_html(char['description']) or NO_DESCRIPTION),

@@ -1,8 +1,7 @@
 # coding=utf-8
 """
-search.py - Sopel Search Engine Module
-Copyright 2008-9, Sean B. Palmer, inamidst.com
-Copyright 2012, Elsie Powell, embolalia.com
+anilist.py - Sopel AniList Plugin
+Copyright 2020-2021 SleepingPanda & dgw
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat

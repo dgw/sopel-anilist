@@ -177,7 +177,7 @@ def al_anime(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         media = data['data']['Media']
-        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
+        title = next(media['title'][lang] for lang in ['romaji', 'native', 'english'] if media['title'][lang] is not None)
         studios = ', '.join([studio['name'] for studio in media['studios']['nodes']])
         genres = ', '.join(media['genres'])
         voice_actors = ', '.join(
@@ -224,7 +224,7 @@ def al_manga(bot, trigger):
         bot.reply("No results found for '%s'." % trigger.group(2))
     else:
         media = data['data']['Media']
-        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
+        title = next(media['title'][lang] for lang in ['romaji', 'native', 'english'] if media['title'][lang] is not None)
         staff = ', '.join([staff['name']['full'] for staff in media['staff']['nodes']])
         genres = ', '.join(media['genres'])
         characters = ', '.join(
@@ -271,7 +271,7 @@ def al_character(bot, trigger):
         char = data['data']['Character']
         media = char['media']['nodes'][0]
         name = char['name']['full'] or char['name']['native']
-        title = next(media['title'][lang] for lang in ['english', 'romaji', 'native'] if media['title'][lang] is not None)
+        title = next(media['title'][lang] for lang in ['romaji', 'native', 'english'] if media['title'][lang] is not None)
 
         output = (
             "{name} from {title} | {description}"

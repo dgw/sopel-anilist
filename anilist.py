@@ -17,7 +17,7 @@ except ImportError:
 import bleach
 import requests
 
-from sopel import formatting, module
+from sopel import formatting, plugin
 from sopel.tools import web
 
 
@@ -157,7 +157,7 @@ def al_query(query, variables={}):
     return data
 
 
-@module.commands('anilist', 'al')
+@plugin.commands('anilist', 'al')
 def al_anime(bot, trigger):
     """Queries AniList for an anime matching the search input."""
     if not trigger.group(2):
@@ -201,10 +201,10 @@ def al_anime(bot, trigger):
             voice_actors=voice_actors,
             description=(clean_html(media['description']) or NO_DESCRIPTION),
         )
-        bot.say(truncate_result(output))
+        bot.say(output, truncation='…')
 
 
-@module.commands('anilistmanga', 'alm')
+@plugin.commands('anilistmanga', 'alm')
 def al_manga(bot, trigger):
     """Queries AniList for an manga matching the search input."""
     if not trigger.group(2):
@@ -246,10 +246,10 @@ def al_manga(bot, trigger):
             characters=characters,
             description=(clean_html(media['description']) or NO_DESCRIPTION),
         )
-        bot.say(truncate_result(output))
+        bot.say(output, truncation='…')
 
 
-@module.commands('anilistchar', 'alc')
+@plugin.commands('anilistchar', 'alc')
 def al_character(bot, trigger):
     """Queries AniList for a character matching the search input."""
     if not trigger.group(2):
@@ -280,27 +280,9 @@ def al_character(bot, trigger):
             title=title,
             description=(clean_html(char['description']) or NO_DESCRIPTION),
         )
-        bot.say(truncate_result(output))
+        bot.say(output, truncation='…')
 
 
 def clean_html(input):
     output = bleach.clean(input, tags=[], strip=True)
     return web.decode(output)
-
-
-def truncate_result(text):
-    if len(text) > 400:
-        last_space = text.rfind(' ', 0, 400)
-        if last_space == -1:
-            # force hard break if the text doesn't contain any spaces
-            r = text[:400]
-        else:
-            r = text[:last_space]
-
-        # add ellipsis only if the input was actually shortened
-        if len(r) < len(text):
-            r += '…'
-
-        return r
-
-    return text

@@ -104,6 +104,7 @@ QUERIES = {
                     full
                     native
                 }
+                siteUrl
                 description(asHtml: true)
                 media {
                     nodes {
@@ -274,10 +275,11 @@ def al_character(bot, trigger):
         title = next(media['title'][lang] for lang in ['romaji', 'native', 'english'] if media['title'][lang] is not None)
 
         output = (
-            "{name} from {title} | {description}"
+            "{name} from {title} | {link} | {description}"
         ).format(
             name=name,
             title=title,
+            link=char['siteUrl'],
             description=(clean_html(char['description']) or NO_DESCRIPTION),
         )
         bot.say(output, truncation='…')

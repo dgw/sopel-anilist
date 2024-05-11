@@ -22,10 +22,14 @@ from sopel.tools import web
 
 
 ANILIST_ENDPOINT = "https://graphql.anilist.co/"
+QVARS = {
+    "id": ("$id: Int", "id: $id"),
+    "search": ("$name: String", "search: $name"),
+}
 QUERIES = {
     "anime": """
-        query ($name: String) {
-            Media (search: $name, type: ANIME) {
+        query (%s) {
+            Media (%s, type: ANIME) {
                 title {
                     romaji
                     english
@@ -62,8 +66,8 @@ QUERIES = {
         }
     """,
     "manga": """
-        query ($name: String) {
-            Media (search: $name, type: MANGA) {
+        query (%s) {
+            Media (%s, type: MANGA) {
                 title {
                     romaji
                     english
@@ -97,8 +101,8 @@ QUERIES = {
         }
     """,
     "character": """
-        query ($name: String) {
-            Character(search: $name) {
+        query (%s) {
+            Character(%s) {
                 id
                 name {
                     full
@@ -158,18 +162,31 @@ def al_query(query, variables={}):
     return data
 
 
+@plugin.url(r'https?://anilist\.co/(?P<type>anime|manga|character)/(?P<id>\d+)')
+def anilist_link(bot, trigger):
+    # yes, this is the hacky way
+    # I don't want to maintain a mapping
+    globals()['al_' + trigger.group('type')](bot, trigger, trigger.group('id'))
+
+
 @plugin.commands('anilist', 'al')
-def al_anime(bot, trigger):
+def al_anime(bot, trigger, id_=None):
     """Queries AniList for an anime matching the search input."""
-    if not trigger.group(2):
+    if id_ is None and not trigger.group(2):
         bot.reply("You have to tell me what to search.")
         return
 
-    variables = {
-        'name': trigger.group(2),
-    }
+    variables = {}
+    if id_ is None:
+        variables['name'] = trigger.group(2)
+    else:
+        variables['id'] = id_
+
+    qvars = QVARS['id'] if id_ else QVARS['search']
+    query = QUERIES['anime'] % (qvars[0], qvars[1])  # % because .format() would require doubling every { and }
+
     try:
-        data = al_query(QUERIES['anime'], variables)
+        data = al_query(query, variables)
     except AniListAPIError as e:
         bot.reply("Error: {}".format(str(e)))
         return
@@ -206,17 +223,23 @@ def al_anime(bot, trigger):
 
 
 @plugin.commands('anilistmanga', 'alm')
-def al_manga(bot, trigger):
+def al_manga(bot, trigger, id_=None):
     """Queries AniList for an manga matching the search input."""
-    if not trigger.group(2):
+    if id_ is None and not trigger.group(2):
         bot.reply("You have to tell me what to search.")
         return
 
-    variables = {
-        'name': trigger.group(2),
-    }
+    variables = {}
+    if id_ is None:
+        variables['name'] = trigger.group(2)
+    else:
+        variables['id'] = id_
+
+    qvars = QVARS['id'] if id_ else QVARS['search']
+    query = QUERIES['manga'] % (qvars[0], qvars[1])  # % because .format() would require doubling every { and }
+
     try:
-        data = al_query(QUERIES['manga'], variables)
+        data = al_query(query, variables)
     except AniListAPIError as e:
         bot.reply("Error: {}".format(str(e)))
         return
@@ -251,17 +274,23 @@ def al_manga(bot, trigger):
 
 
 @plugin.commands('anilistchar', 'alc')
-def al_character(bot, trigger):
+def al_character(bot, trigger, id_=None):
     """Queries AniList for a character matching the search input."""
-    if not trigger.group(2):
+    if id_ is None and not trigger.group(2):
         bot.reply("You have to tell me what to search.")
         return
 
-    variables = {
-        'name': trigger.group(2),
-    }
+    variables = {}
+    if id_ is None:
+        variables['name'] = trigger.group(2)
+    else:
+        variables['id'] = id_
+
+    qvars = QVARS['id'] if id_ else QVARS['search']
+    query = QUERIES['character'] % (qvars[0], qvars[1])  # % because .format() would require doubling every { and }
+
     try:
-        data = al_query(QUERIES['character'], variables)
+        data = al_query(query, variables)
     except AniListAPIError as e:
         bot.reply("Error: {}".format(str(e)))
         return

@@ -1,18 +1,15 @@
-# coding=utf-8
-"""
-anilist.py - Sopel AniList Plugin
+"""sopel-anilist
+
+AniList plugin for Sopel IRC bots
+
 Copyright 2020-2021 SleepingPanda & dgw
 Licensed under the Eiffel Forum License 2.
 
 https://sopel.chat
 """
-from __future__ import unicode_literals, absolute_import, print_function, division
+from __future__ import annotations
 
-try:
-    from json import JSONDecodeError
-except ImportError:
-    # Python < 3.5
-    JSONDecodeError = ValueError
+from json import JSONDecodeError
 
 import bleach
 import requests

@@ -121,6 +121,20 @@ QUERIES = {
             }
         }
     """,
+    "staff": """
+        query (%s) {
+            Staff(%s) {
+                id
+                name {
+                    full
+                    native
+                }
+                siteUrl
+                primaryOccupations
+                yearsActive
+            }
+        }
+    """,
 }
 
 NO_DESCRIPTION = formatting.italic('[no description available]')
@@ -159,7 +173,7 @@ def al_query(query, variables={}):
     return data
 
 
-@plugin.url(r'https?://anilist\.co/(?P<type>anime|manga|character)/(?P<id>\d+)')
+@plugin.url(r'https?://anilist\.co/(?P<type>anime|manga|character|staff)/(?P<id>\d+)')
 def anilist_link(bot, trigger):
     # yes, this is the hacky way
     # I don't want to maintain a mapping
@@ -307,6 +321,54 @@ def al_character(bot, trigger, id_=None):
             title=title,
             link=char['siteUrl'],
             description=(clean_html(char['description']) or NO_DESCRIPTION),
+        )
+        bot.say(output, truncation='…')
+
+
+@plugin.commands('aniliststaff', 'als')
+def al_staff(bot, trigger, id_=None):
+    """Queries AniList for staff (person) matching the search input."""
+    if id_ is None and not trigger.group(2):
+        bot.reply("You have to tell me what to search.")
+        return
+
+    variables = {}
+    if id_ is None:
+        variables['name'] = trigger.group(2)
+    else:
+        variables['id'] = id_
+
+    qvars = QVARS['id'] if id_ else QVARS['search']
+    query = QUERIES['staff'] % (qvars[0], qvars[1])  # % because .format() would require doubling every { and }
+
+    try:
+        data = al_query(query, variables)
+    except AniListAPIError as e:
+        bot.reply("Error: {}".format(str(e)))
+        return
+
+    if data.get('errors', []):
+        bot.reply("No results found for '%s'." % trigger.group(2))
+    else:
+        staff = data['data']['Staff']
+        name = staff['name']['full'] or staff['name']['native']
+        occupations = ', '.join(staff['primaryOccupations']) or '(unknown roles)'
+
+        active_vals = len(staff['yearsActive'])
+        if active_vals == 2:
+            years_active = '%s—%s' % (staff['yearsActive'][0], staff['yearsActive'][1])
+        elif active_vals == 1:
+            years_active = '%s–present' % staff['yearsActive'][0]
+        else:
+            years_active = '(no data)'
+
+        output = (
+            "{name}: {occupations} | Active {active} | {link}"
+        ).format(
+            name=name,
+            occupations=', '.join(staff['primaryOccupations']),
+            active=years_active,
+            link=staff['siteUrl'],
         )
         bot.say(output, truncation='…')
 

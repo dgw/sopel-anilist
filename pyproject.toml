@@ -14,7 +14,7 @@ readme = { file=["README.md", "NEWS"], content-type="text/markdown" }
 
 [project]
 name = "sopel-anilist"
-version = "0.1.0"
+version = "0.2.0"
 description = "AniList plugin for Sopel IRC bots"
 
 authors = [
@@ -29,6 +29,7 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "License :: Eiffel Forum License (EFL)",
     "License :: OSI Approved :: Eiffel Forum License",
+    "Programming Language :: Python :: 3 :: Only",
     "Topic :: Communications :: Chat :: Internet Relay Chat",
 ]
 keywords = [

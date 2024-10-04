@@ -1,5 +1,15 @@
 ## Changelog
 
+### 0.2.0
+
+Added:
+- Staff/person lookup (`.aniliststaff`/`.als` command) and link handling (#2)
+
+Meta:
+- Added actual usage information to the readme/description
+- Tweaked package classifiers
+
+
 ### 0.1.0
 
 First release of `sopel-anilist`.
